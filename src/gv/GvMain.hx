@@ -1,5 +1,6 @@
 package gv;
 
+import js.html.TouchEvent;
 import js.html.MouseEvent;
 import js.html.KeyboardEvent;
 import js.html.Event;
@@ -79,24 +80,27 @@ class GvMain {
                 }
             };
             var mouseDownFlag:Bool = false;
-            Browser.window.onmousedown = function(e:MouseEvent):Void {
+            Browser.window.onmousedown = function(e:MouseEvent):Bool {
                 mouseDownFlag = true;
                 myMouseX = e.x;
                 myMouseY = e.y;
                 updateSelf(null, false, 0, false, e.shiftKey);
+                return false;
             };
-            Browser.window.onmouseup = function(e:MouseEvent):Void {
+            Browser.window.onmouseup = function(e:MouseEvent):Bool {
                 mouseDownFlag = false;
                 myMouseX = e.x;
                 myMouseY = e.y;
                 updateSelf(null, false, 0, false, false);
+                return false;
             };
-            Browser.window.onmousemove = function(e:MouseEvent):Void {
+            Browser.window.onmousemove = function(e:MouseEvent):Bool {
                 myMouseX = e.x;
                 myMouseY = e.y;
                 updateSelf(null, mouseDownFlag, 0, false, false);
+                return false;
             };
-            Browser.window.onmousewheel = function(e:MouseEvent):Void {
+            Browser.window.onmousewheel = function(e:MouseEvent):Bool {
                 myMouseX = e.x;
                 myMouseY = e.y;
                 var wheel:Int = (0<e.detail ? -1 : e.detail<0 ? 1 : 0);
@@ -105,7 +109,72 @@ class GvMain {
                     wheel = (0<wheelDelta ? 1 : wheelDelta<0 ? -1 : 0);
                 }
                 updateSelf(null, false, wheel, false, false);
+                return false;
             };
+            var beforeTouchX:Null<Float> = null;
+            var beforeTouchY:Null<Float> = null;
+            var beforeTouchD:Null<Float> = null;
+            var touchK = 12.425134878021496 / Math.log(2);
+            var touchIds = new Map<Int, Bool>();
+            var touchFunc = function(e:TouchEvent):Bool {
+                if(1<=e.touches.length) {
+                    for(i in 0...e.touches.length) {
+                        var t = e.touches.item(i);
+                        if(!touchIds.exists(t.identifier)) {
+                            beforeTouchX = null;
+                        }
+                    }
+                    var sumX:Float = 0;
+                    var sumY:Float = 0;
+                    for(i in 0...e.touches.length) {
+                        var t = e.touches.item(i);
+                        sumX += t.pageX;
+                        sumY += t.pageY;
+                    }
+                    var x = sumX / e.touches.length;
+                    var y = sumY / e.touches.length;
+                    var sumD:Float = 0;
+                    for(i in 0...e.touches.length) {
+                        var t = e.touches.item(i);
+                        var dx = t.pageX - x;
+                        var dy = t.pageY - y;
+                        sumD += Math.sqrt(dx*dx+dy*dy+0.00001);
+                    }
+                    var d = sumD / e.touches.length;
+                    if(beforeTouchX!=null) {
+                        var wheel = Math.log(d / beforeTouchD)*touchK;
+                        myMouseX = x;
+                        myMouseY = y;
+                        updateSelf(null, true, wheel, false, false);
+                    }
+                    beforeTouchX = x;
+                    beforeTouchY = y;
+                    beforeTouchD = d;
+                }
+                touchIds = new Map<Int, Bool>();
+                for(i in 0...e.touches.length) {
+                    var t = e.touches.item(i);
+                    touchIds.set(t.identifier, true);
+                }
+                e.preventDefault();
+                return false;
+            };
+            Browser.window.ontouchmove = touchFunc;
+            Browser.window.ontouchstart = function(e:TouchEvent):Bool {
+                beforeTouchX = null;
+                touchFunc(e);
+                return false;
+            };
+            Browser.window.ontouchcancel = function(e:TouchEvent):Bool {
+                beforeTouchX = null;
+                e.preventDefault();
+                return false;
+            }
+            Browser.window.ontouchend = function(e:TouchEvent):Bool {
+                beforeTouchX = null;
+                e.preventDefault();
+                return false;
+            }
             Main.main();
             updateTimeList();
         };
@@ -130,7 +199,7 @@ class GvMain {
         paintTimer = null;
         updateSelf(ctx, false, 0, false, false);
     }
-    public static function updateSelf(ctx:CanvasRenderingContext2D, mouseDown:Bool, zoom:Int, zoom2:Bool, shiftClick:Bool):Void {
+    public static function updateSelf(ctx:CanvasRenderingContext2D, mouseDown:Bool, zoom:Float, zoom2:Bool, shiftClick:Bool):Void {
         var width = Math.max(1, canvas.width);
         var height = Math.max(1, canvas.height);
         var dx = GvCore.getMaxX() - GvCore.getMinX();
@@ -177,12 +246,21 @@ class GvMain {
             cy -= dcy/maxD;
             updateCenter();
             if(oldCx!=cx || oldCy!=cy) {
+                if(zoom!=0) {
+                    cursorX = (myMouseX-width*0.5)/scale+dx*0.5+GvCore.getMinX()+maxD*cx;
+                    cursorY = (myMouseY-height*0.5)/scale+dy*0.5+GvCore.getMinY()+maxD*cy;
+                    var newScale = Math.min(Math.max(0.01, GvMain.scale * Math.pow(0.5, zoom*0.080482023721841)), 1.0);
+                    if(GvMain.scale!=newScale) {
+                        GvMain.scale = newScale;
+                        updateSelf(null, false, 0, true, false);
+                    }
+                }
                 updateUI();
                 return;
             }
         }
         if(zoom!=0) {
-            var newScale = Math.min(Math.max(0.01, GvMain.scale * Math.pow(0.8, zoom*0.25)), 1.0);
+            var newScale = Math.min(Math.max(0.01, GvMain.scale * Math.pow(0.5, zoom*0.080482023721841)), 1.0);
             if(GvMain.scale!=newScale) {
                 GvMain.scale = newScale;
                 updateSelf(null, false, 0, true, false);

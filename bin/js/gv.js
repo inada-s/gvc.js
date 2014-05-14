@@ -35,6 +35,11 @@ Main.main = function() {
 	gv.Gv.circle(3.0,1.0).color(1);
 	gv.Gv.circle(4.0,1.0).color(2);
 	gv.Gv.circle(1.0,2.0).rgb(255,0,0);
+	gv.Gv.newTime();
+	gv.Gv.circle(2.0,1.0).color(0);
+	gv.Gv.circle(3.0,1.0).color(1);
+	gv.Gv.circle(4.0,1.0).color(2);
+	gv.Gv.circle(1.0,2.0).rgb(255,0,0);
 };
 var IMap = function() { };
 var Std = function() { };
@@ -43,6 +48,10 @@ Std["int"] = function(x) {
 };
 var gv = {};
 gv.Gv = function() { };
+gv.Gv.newTime = function(time) {
+	if(!gv.Gv.enable_) return;
+	gv.GvCore.newTime(time);
+};
 gv.Gv.circle = function(x,y,r) {
 	if(r == null) r = 0.5;
 	var ret = new gv.GvSnapItem_Circle(x,y,r);
@@ -50,6 +59,12 @@ gv.Gv.circle = function(x,y,r) {
 	return ret;
 };
 gv.GvCore = function() { };
+gv.GvCore.newTime = function(time) {
+	if(time == null) gv.GvCore.nowTime = Std["int"](0.1 + Math.max(0,gv.GvCore.maxTime + 1)); else {
+		gv.GvCore.maxTime = Std["int"](0.1 + Math.max(gv.GvCore.maxTime,time));
+		gv.GvCore.nowTime = time;
+	}
+};
 gv.GvCore.addItem = function(item) {
 	if(gv.GvCore.emptyFlag) {
 		gv.GvCore.emptyFlag = false;
@@ -179,17 +194,20 @@ gv.GvMain.main = function() {
 			gv.GvMain.myMouseX = e3.x;
 			gv.GvMain.myMouseY = e3.y;
 			gv.GvMain.updateSelf(null,false,0,false,e3.shiftKey);
+			return false;
 		};
 		window.onmouseup = function(e4) {
 			mouseDownFlag = false;
 			gv.GvMain.myMouseX = e4.x;
 			gv.GvMain.myMouseY = e4.y;
 			gv.GvMain.updateSelf(null,false,0,false,false);
+			return false;
 		};
 		window.onmousemove = function(e5) {
 			gv.GvMain.myMouseX = e5.x;
 			gv.GvMain.myMouseY = e5.y;
 			gv.GvMain.updateSelf(null,mouseDownFlag,0,false,false);
+			return false;
 		};
 		window.onmousewheel = function(e6) {
 			gv.GvMain.myMouseX = e6.x;
@@ -201,6 +219,81 @@ gv.GvMain.main = function() {
 				if(0 < wheelDelta) wheel = 1; else if(wheelDelta < 0) wheel = -1; else wheel = 0;
 			}
 			gv.GvMain.updateSelf(null,false,wheel,false,false);
+			return false;
+		};
+		var beforeTouchX = null;
+		var beforeTouchY = null;
+		var beforeTouchD = null;
+		var touchK = 12.425134878021496 / Math.log(2);
+		var touchIds = new haxe.ds.IntMap();
+		var touchFunc = function(e7) {
+			if(1 <= e7.touches.length) {
+				var _g1 = 0;
+				var _g2 = e7.touches.length;
+				while(_g1 < _g2) {
+					var i = _g1++;
+					var t = e7.touches.item(i);
+					if(!touchIds.exists(t.identifier)) beforeTouchX = null;
+				}
+				var sumX = 0;
+				var sumY = 0;
+				var _g11 = 0;
+				var _g3 = e7.touches.length;
+				while(_g11 < _g3) {
+					var i1 = _g11++;
+					var t1 = e7.touches.item(i1);
+					sumX += t1.pageX;
+					sumY += t1.pageY;
+				}
+				var x = sumX / e7.touches.length;
+				var y = sumY / e7.touches.length;
+				var sumD = 0;
+				var _g12 = 0;
+				var _g4 = e7.touches.length;
+				while(_g12 < _g4) {
+					var i2 = _g12++;
+					var t2 = e7.touches.item(i2);
+					var dx = t2.pageX - x;
+					var dy = t2.pageY - y;
+					sumD += Math.sqrt(dx * dx + dy * dy + 0.00001);
+				}
+				var d = sumD / e7.touches.length;
+				if(beforeTouchX != null) {
+					var wheel1 = Math.log(d / beforeTouchD) * touchK;
+					gv.GvMain.myMouseX = x;
+					gv.GvMain.myMouseY = y;
+					gv.GvMain.updateSelf(null,true,wheel1,false,false);
+				}
+				beforeTouchX = x;
+				beforeTouchY = y;
+				beforeTouchD = d;
+			}
+			touchIds = new haxe.ds.IntMap();
+			var _g13 = 0;
+			var _g5 = e7.touches.length;
+			while(_g13 < _g5) {
+				var i3 = _g13++;
+				var t3 = e7.touches.item(i3);
+				touchIds.set(t3.identifier,true);
+			}
+			e7.preventDefault();
+			return false;
+		};
+		window.ontouchmove = touchFunc;
+		window.ontouchstart = function(e8) {
+			beforeTouchX = null;
+			touchFunc(e8);
+			return false;
+		};
+		window.ontouchcancel = function(e9) {
+			beforeTouchX = null;
+			e9.preventDefault();
+			return false;
+		};
+		window.ontouchend = function(e10) {
+			beforeTouchX = null;
+			e10.preventDefault();
+			return false;
 		};
 		Main.main();
 		gv.GvMain.updateTimeList();
@@ -261,14 +354,23 @@ gv.GvMain.updateSelf = function(ctx,mouseDown,zoom,zoom2,shiftClick) {
 		gv.GvMain.cy -= dcy / maxD;
 		gv.GvMain.updateCenter();
 		if(oldCx != gv.GvMain.cx || oldCy != gv.GvMain.cy) {
+			if(zoom != 0) {
+				gv.GvMain.cursorX = (gv.GvMain.myMouseX - width * 0.5) / scale + dx * 0.5 + gv.GvCore.getMinX() + maxD * gv.GvMain.cx;
+				gv.GvMain.cursorY = (gv.GvMain.myMouseY - height * 0.5) / scale + dy * 0.5 + gv.GvCore.getMinY() + maxD * gv.GvMain.cy;
+				var newScale = Math.min(Math.max(0.01,gv.GvMain.scale * Math.pow(0.5,zoom * 0.080482023721841)),1.0);
+				if(gv.GvMain.scale != newScale) {
+					gv.GvMain.scale = newScale;
+					gv.GvMain.updateSelf(null,false,0,true,false);
+				}
+			}
 			gv.GvMain.updateUI();
 			return;
 		}
 	}
 	if(zoom != 0) {
-		var newScale = Math.min(Math.max(0.01,gv.GvMain.scale * Math.pow(0.8,zoom * 0.25)),1.0);
-		if(gv.GvMain.scale != newScale) {
-			gv.GvMain.scale = newScale;
+		var newScale1 = Math.min(Math.max(0.01,gv.GvMain.scale * Math.pow(0.5,zoom * 0.080482023721841)),1.0);
+		if(gv.GvMain.scale != newScale1) {
+			gv.GvMain.scale = newScale1;
 			gv.GvMain.updateSelf(null,false,0,true,false);
 			gv.GvMain.updateUI();
 			return;
