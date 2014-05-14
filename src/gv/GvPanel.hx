@@ -1,5 +1,0 @@
-package gv;
-
-class GvPanel {
-
-}
