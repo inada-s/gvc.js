@@ -315,6 +315,7 @@ class GvMain {
         var time = nowSnap.getTime();
         if(shiftClick) {
             GvCore.sendInput(time, cursorX, cursorY);
+            updateTimeList();
         }
         var title:String;
         if(0<=myMouseX && 0<=myMouseY && GvCore.getMinX()<=cursorX && cursorX<=GvCore.getMaxX() && GvCore.getMinY()<=cursorY && cursorY<=GvCore.getMaxY()) {

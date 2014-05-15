@@ -81,10 +81,29 @@ class GvCore {
         return autoModeCount;
     }
     public static function sendInput(time:Int, x:Float, y:Float):Void {
-        //TODO
+        if(inputInt_!=null) {
+            var func:Int->Int->Int->Void = inputInt_;
+            inputInt_ = null;
+            func(time, Math.round(x), Math.round(y));
+        }
+        else if(inputFloat_!=null) {
+            var func:Int->Float->Float->Void = inputFloat_;
+            inputFloat_ = null;
+            func(time, x, y);
+        }
     }
     private static var colors:Array<Array<Float> > = [[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 1, 0], [0, 1, 1], [1, 0, 1], [1, 0.5, 0], [1, 0, 0.5]];
     public static function gvGetColorFromIndex(idx:Int):Array<Float> {
         return colors[idx];
+    }
+    private static var inputInt_:Int->Int->Int->Void = null;
+    private static var inputFloat_:Int->Float->Float->Void = null;
+    public static function inputInt(callback:Int->Int->Int->Void):Void {
+        inputInt_ = callback;
+        inputFloat_ = null;
+    }
+    public static function inputFloat(callback:Int->Float->Float->Void):Void {
+        inputFloat_ = callback;
+        inputInt_ = null;
     }
 }
