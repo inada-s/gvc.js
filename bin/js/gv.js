@@ -590,6 +590,21 @@ gv.GvMain.updateCenter = function() {
 	gv.GvMain.cx = Math.min(Math.max(-gv.GvMain.mx,gv.GvMain.cx),gv.GvMain.mx);
 	gv.GvMain.cy = Math.min(Math.max(-gv.GvMain.my,gv.GvMain.cy),gv.GvMain.my);
 };
+gv.GvMain.setAutoModeTimer = function() {
+	if(gv.GvMain.autoModeTimerId != null) window.clearTimeout(gv.GvMain.autoModeTimerId);
+	gv.GvMain.autoModeTimerId = window.setTimeout(gv.GvMain.onAutoModeTimer,200);
+};
+gv.GvMain.onAutoModeTimer = function() {
+	if(gv.GvMain.autoModeTimerId != null) {
+		window.clearTimeout(gv.GvMain.autoModeTimerId);
+		gv.GvMain.autoModeTimerId = null;
+	}
+	if(gv.GvMain.timeList != null && gv.GvMain.now < gv.GvMain.timeList.length - 1) {
+		++gv.GvMain.now;
+		gv.GvMain.updateTime();
+		gv.GvMain.setAutoModeTimer();
+	}
+};
 gv.GvMain.updateTime = function() {
 	if(gv.GvMain.timeList != null && gv.GvMain.now < gv.GvMain.timeList.length) {
 		var time = gv.GvMain.timeList[gv.GvMain.now];
@@ -602,8 +617,7 @@ gv.GvMain.updateTime = function() {
 			gv.GvMain.autoModeCount = amc;
 			gv.GvMain.autoMode = true;
 		}
-		if(gv.GvMain.autoMode) {
-		}
+		if(gv.GvMain.autoMode) gv.GvMain.setAutoModeTimer();
 		return;
 	}
 	gv.GvMain.nowSnap = null;
@@ -867,7 +881,7 @@ gv.GvCore.maxX = 1;
 gv.GvCore.maxY = 1;
 gv.GvCore.emptyFlag = true;
 gv.GvCore.snapMap = new haxe.ds.IntMap();
-gv.GvCore.autoModeCount = 1;
+gv.GvCore.autoModeCount = 0;
 gv.GvCore.colors = [[1,0,0],[0,1,0],[0,0,1],[1,1,0],[0,1,1],[1,0,1],[1,0.5,0],[1,0,0.5]];
 gv.GvMain.now = 0;
 gv.GvMain.scale = 1.0;

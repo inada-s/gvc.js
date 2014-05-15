@@ -9,7 +9,7 @@ class GvCore {
     private static var maxY:Float = 1;
     private static var emptyFlag:Bool = true;
     private static var snapMap:Map<Int, GvSnap> = new Map<Int, GvSnap>();
-    private static var autoModeCount:Int = 1;
+    private static var autoModeCount:Int = 0;
     public static function newTime(time:Null<Int> = null):Void {
         if(time==null) {
             nowTime = Std.int(0.1+Math.max(0, maxTime + 1));
@@ -105,5 +105,8 @@ class GvCore {
     public static function inputFloat(callback:Int->Float->Float->Void):Void {
         inputFloat_ = callback;
         inputInt_ = null;
+    }
+    public static function autoMode():Void {
+        ++autoModeCount;
     }
 }

@@ -363,6 +363,25 @@ class GvMain {
         cx = Math.min(Math.max(-mx, cx), mx);
         cy = Math.min(Math.max(-my, cy), my);
     }
+
+    static var autoModeTimerId:Null<Int> = null;
+    private static function setAutoModeTimer():Void {
+        if(autoModeTimerId!=null) {
+            Browser.window.clearTimeout(autoModeTimerId);
+        }
+        autoModeTimerId = Browser.window.setTimeout(onAutoModeTimer, 200);
+    }
+    private static function onAutoModeTimer():Void {
+        if(autoModeTimerId!=null) {
+            Browser.window.clearTimeout(autoModeTimerId);
+            autoModeTimerId = null;
+        }
+        if(timeList!=null && now<timeList.length-1) {
+            ++now;
+            updateTime();
+            setAutoModeTimer();
+        }
+    }
     private static function updateTime():Void {
         if(timeList!=null && now<timeList.length) {            var time:Int = timeList[now];
             if(now==timeList.length-1) {
@@ -377,7 +396,7 @@ class GvMain {
                 autoMode = true;
             }
             if(autoMode) {
-                //TODO: autoModeTimer.restart();
+                setAutoModeTimer();
             }
             return;
         }

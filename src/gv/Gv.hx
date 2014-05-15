@@ -132,4 +132,7 @@ class Gv {
     public static function inputFloat(callback:Int->Float->Float->Void):Void {
         GvCore.inputFloat(callback);
     }
+    public static function autoMode():Void {
+        GvCore.autoMode();
+    }
 }
