@@ -29,6 +29,29 @@
  */
 (function () { "use strict";
 var HxOverrides = function() { };
+HxOverrides.strDate = function(s) {
+	var _g = s.length;
+	switch(_g) {
+	case 8:
+		var k = s.split(":");
+		var d = new Date();
+		d.setTime(0);
+		d.setUTCHours(k[0]);
+		d.setUTCMinutes(k[1]);
+		d.setUTCSeconds(k[2]);
+		return d;
+	case 10:
+		var k1 = s.split("-");
+		return new Date(k1[0],k1[1] - 1,k1[2],0,0,0);
+	case 19:
+		var k2 = s.split(" ");
+		var y = k2[0].split("-");
+		var t = k2[1].split(":");
+		return new Date(y[0],y[1] - 1,y[2],t[0],t[1],t[2]);
+	default:
+		throw "Invalid date format : " + s;
+	}
+};
 HxOverrides.iter = function(a) {
 	return { cur : 0, arr : a, hasNext : function() {
 		return this.cur < this.arr.length;
@@ -381,7 +404,7 @@ gv.GvMain.main = function() {
 						gv.GvMain.autoMode = false;
 						var fPos = 10.0 * (x - beforeTouchX) / gv.GvMain.canvas.width;
 						var newNow;
-						newNow = baseNow + (0 <= fPos?Math.floor(fPos):Math.ceil(fPos));
+						newNow = baseNow - (0 <= fPos?Math.floor(fPos):Math.ceil(fPos));
 						if(newNow != gv.GvMain.now && gv.GvMain.timeList != null && 0 <= newNow && newNow < gv.GvMain.timeList.length) {
 							gv.GvMain.now = newNow;
 							gv.GvMain.updateTime();
@@ -424,8 +447,32 @@ gv.GvMain.main = function() {
 			return false;
 		};
 		window.ontouchmove = touchFunc;
+		var doubleTouchX = null;
+		var doubleTouchY = null;
+		var doubleTouchTime = null;
+		var secondTimeBase = HxOverrides.strDate("2000-01-01 00:00:01").getTime() - HxOverrides.strDate("2000-01-01 00:00:00").getTime();
 		window.ontouchstart = function(e8) {
 			beforeTouchX = null;
+			if(e8.touches.length == 1) {
+				var x1 = e8.touches.item(0).pageX;
+				var y1 = e8.touches.item(0).pageY;
+				var now = new Date().getTime();
+				if(doubleTouchTime != null && now - doubleTouchTime <= secondTimeBase * 0.5) {
+					var dx1 = x1 - doubleTouchX;
+					var dy1 = y1 - doubleTouchY;
+					var d1 = Math.sqrt(dx1 * dx1 + dy1 * dy1);
+					if(d1 <= Math.min(gv.GvMain.canvas.width,gv.GvMain.canvas.height) * 0.05) {
+						gv.GvMain.myMouseX = x1;
+						gv.GvMain.myMouseY = y1;
+						gv.GvMain.updateSelf(null,false,0,false,true);
+						e8.preventDefault();
+						return false;
+					}
+				}
+				doubleTouchX = x1;
+				doubleTouchY = y1;
+				doubleTouchTime = now;
+			}
 			touchFunc(e8);
 			return false;
 		};

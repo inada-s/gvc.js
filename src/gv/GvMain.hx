@@ -158,7 +158,7 @@ class GvMain {
                         if(3<=e.touches.length) {
                             autoMode = false;
                             var fPos = 10.0 * (x-beforeTouchX) / canvas.width;
-                            var newNow = baseNow + (0<=fPos ? Math.floor(fPos) : Math.ceil(fPos));
+                            var newNow = baseNow - (0<=fPos ? Math.floor(fPos) : Math.ceil(fPos));
                             if(newNow!=now && timeList!=null && 0<=newNow && newNow<timeList.length) {
                                 now = newNow;
                                 updateTime();
@@ -201,8 +201,32 @@ class GvMain {
                 return false;
             };
             Browser.window.ontouchmove = touchFunc;
+            var doubleTouchX:Null<Float> = null;
+            var doubleTouchY:Null<Float> = null;
+            var doubleTouchTime:Null<Float> = null;
+            var secondTimeBase:Float = Date.fromString("2000-01-01 00:00:01").getTime() - Date.fromString("2000-01-01 00:00:00").getTime();
             Browser.window.ontouchstart = function(e:TouchEvent):Bool {
                 beforeTouchX = null;
+                if(e.touches.length==1) {
+                    var x = e.touches.item(0).pageX;
+                    var y = e.touches.item(0).pageY;
+                    var now = Date.now().getTime();
+                    if(doubleTouchTime!=null && now-doubleTouchTime <= secondTimeBase*0.5) {
+                        var dx = x - doubleTouchX;
+                        var dy = y - doubleTouchY;
+                        var d = Math.sqrt(dx*dx+dy*dy);
+                        if(d <= Math.min(canvas.width, canvas.height)*0.05) {
+                            myMouseX = x;
+                            myMouseY = y;
+                            updateSelf(null, false, 0, false, true);
+                            e.preventDefault();
+                            return false;
+                        }
+                    }
+                    doubleTouchX = x;
+                    doubleTouchY = y;
+                    doubleTouchTime = now;
+                }
                 touchFunc(e);
                 return false;
             };
