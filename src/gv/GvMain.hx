@@ -1,5 +1,6 @@
 package gv;
 
+import js.html.Element;
 import js.html.TouchEvent;
 import js.html.MouseEvent;
 import js.html.KeyboardEvent;
@@ -11,6 +12,7 @@ import Main;
 
 class GvMain {
     static var canvas:CanvasElement;
+    static var div:Element;
     static var ctx:CanvasRenderingContext2D;
     static var timeList:Array<Int> = null;
     static var now:Int = 0;
@@ -38,6 +40,11 @@ class GvMain {
             canvas.width = Browser.window.innerWidth;
             canvas.height = Browser.window.innerHeight;
             ctx = canvas.getContext2d();
+            div = Browser.document.createElement("div");
+            Browser.document.body.appendChild(div);
+            div.style.position = "absolute";
+            div.style.left = "0px";
+            div.style.bottom = "0px";
             Browser.window.onresize = function(e:Event):Void {
                 canvas.width = Browser.window.innerWidth;
                 canvas.height = Browser.window.innerHeight;
@@ -114,9 +121,15 @@ class GvMain {
             var beforeTouchX:Null<Float> = null;
             var beforeTouchY:Null<Float> = null;
             var beforeTouchD:Null<Float> = null;
+            var baseNow:Int = 0;
+            var beforeTouchLength:Int = 0;
             var touchK = 12.425134878021496 / Math.log(2);
             var touchIds = new Map<Int, Bool>();
             var touchFunc = function(e:TouchEvent):Bool {
+                if(beforeTouchLength!=e.touches.length) {
+                    beforeTouchX = null;
+                }
+                beforeTouchLength = e.touches.length;
                 if(1<=e.touches.length) {
                     for(i in 0...e.touches.length) {
                         var t = e.touches.item(i);
@@ -142,14 +155,42 @@ class GvMain {
                     }
                     var d = sumD / e.touches.length;
                     if(beforeTouchX!=null) {
-                        var wheel = Math.log(d / beforeTouchD)*touchK;
+                        if(3<=e.touches.length) {
+                            autoMode = false;
+                            var fPos = 70.0 * (x-beforeTouchX) / canvas.width;
+                            var newNow = baseNow + (0<=fPos ? Math.floor(fPos) : Math.ceil(fPos));
+                            if(newNow!=now && timeList!=null && 0<=newNow && newNow<timeList.length) {
+                                now = newNow;
+                                updateTime();
+                            }
+                        }
+                        else if(2==e.touches.length) {
+                            var wheel = Math.log(d / beforeTouchD)*touchK;
+                            myMouseX = x;
+                            myMouseY = y;
+                            updateSelf(null, false, wheel, false, false);
+                            beforeTouchX = x;
+                            beforeTouchY = y;
+                            beforeTouchD = d;
+                        }
+                        else if(1==e.touches.length) {
+                            myMouseX = x;
+                            myMouseY = y;
+                            updateSelf(null, true, 0, false, false);
+                            beforeTouchX = x;
+                            beforeTouchY = y;
+                            beforeTouchD = d;
+                        }
+                    }
+                    else {
                         myMouseX = x;
                         myMouseY = y;
-                        updateSelf(null, true, wheel, false, false);
+                        updateSelf(null, false, 0, false, false);
+                        beforeTouchX = x;
+                        beforeTouchY = y;
+                        beforeTouchD = d;
+                        baseNow = now;
                     }
-                    beforeTouchX = x;
-                    beforeTouchY = y;
-                    beforeTouchD = d;
                 }
                 touchIds = new Map<Int, Bool>();
                 for(i in 0...e.touches.length) {
@@ -277,10 +318,10 @@ class GvMain {
         }
         var title:String;
         if(0<=myMouseX && 0<=myMouseY && GvCore.getMinX()<=cursorX && cursorX<=GvCore.getMaxX() && GvCore.getMinY()<=cursorY && cursorY<=GvCore.getMaxY()) {
-            title = 'time ${time} ( ${now+1} / ${timeList.length} ) (${Std.int(cursorX+0.5)}, ${Std.int(cursorY+0.5)}) (${cursorX}, ${cursorY})';
+            div.textContent = 'time ${time} ( ${now+1} / ${timeList.length} ) (${Std.int(cursorX+0.5)}, ${Std.int(cursorY+0.5)}) (${cursorX}, ${cursorY})';
         }
         else {
-            title = 'time ${time} ( ${now+1} / ${timeList.length} )';
+            div.textContent = 'time ${time} ( ${now+1} / ${timeList.length} )';
         }
         sx = (width/scale-dx)*0.5-GvCore.getMinX()-maxD*cx;
         sy = (height/scale-dy)*0.5-GvCore.getMinY()-maxD*cy;
@@ -298,8 +339,7 @@ class GvMain {
         cy = Math.min(Math.max(-my, cy), my);
     }
     private static function updateTime():Void {
-        if(timeList!=null && now<timeList.length) {
-            var time:Int = timeList[now];
+        if(timeList!=null && now<timeList.length) {            var time:Int = timeList[now];
             if(now==timeList.length-1) {
                 autoMode = true;
             }

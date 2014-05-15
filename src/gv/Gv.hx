@@ -24,4 +24,11 @@ class Gv {
         }
         return ret;
     }
+    public static function text(text:String, x:Float, y:Float, r:Float = 0.5):GvSnapItem_Text {
+        var ret = new GvSnapItem_Text(text, x, y, r);
+        if(enable_) {
+            GvCore.addItem(ret);
+        }
+        return ret;
+    }
 }

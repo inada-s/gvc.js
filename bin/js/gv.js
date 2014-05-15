@@ -31,14 +31,23 @@ List.prototype = {
 var Main = function() { };
 Main.main = function() {
 	gv.Gv.circle(1.0,1.0);
-	gv.Gv.circle(2.0,1.0).color(0);
-	gv.Gv.circle(3.0,1.0).color(1);
-	gv.Gv.circle(4.0,1.0).color(2);
+	gv.Gv.text("A",2.0,1.0).color(0);
+	gv.Gv.text("B",3.0,1.0).color(1);
+	gv.Gv.text("C",4.0,1.0).color(2);
 	gv.Gv.circle(1.0,2.0).rgb(255,0,0);
 	gv.Gv.newTime();
 	gv.Gv.circle(2.0,1.0).color(0);
 	gv.Gv.circle(3.0,1.0).color(1);
 	gv.Gv.circle(4.0,1.0).color(2);
+	gv.Gv.text("A",1.0,2.0).rgb(255,0,0);
+	gv.Gv.newTime();
+	gv.Gv.text("B",3.0,1.0).color(1);
+	gv.Gv.text("C",4.0,1.0).color(2);
+	gv.Gv.circle(1.0,2.0).rgb(255,0,0);
+	gv.Gv.newTime();
+	gv.Gv.circle(4.0,1.0).color(2);
+	gv.Gv.text("A",1.0,2.0).rgb(255,0,0);
+	gv.Gv.newTime();
 	gv.Gv.circle(1.0,2.0).rgb(255,0,0);
 };
 var IMap = function() { };
@@ -55,6 +64,12 @@ gv.Gv.newTime = function(time) {
 gv.Gv.circle = function(x,y,r) {
 	if(r == null) r = 0.5;
 	var ret = new gv.GvSnapItem_Circle(x,y,r);
+	if(gv.Gv.enable_) gv.GvCore.addItem(ret);
+	return ret;
+};
+gv.Gv.text = function(text,x,y,r) {
+	if(r == null) r = 0.5;
+	var ret = new gv.GvSnapItem_Text(text,x,y,r);
 	if(gv.Gv.enable_) gv.GvCore.addItem(ret);
 	return ret;
 };
@@ -134,6 +149,11 @@ gv.GvMain.main = function() {
 		gv.GvMain.canvas.width = window.innerWidth;
 		gv.GvMain.canvas.height = window.innerHeight;
 		gv.GvMain.ctx = gv.GvMain.canvas.getContext("2d");
+		gv.GvMain.div = window.document.createElement("div");
+		window.document.body.appendChild(gv.GvMain.div);
+		gv.GvMain.div.style.position = "absolute";
+		gv.GvMain.div.style.left = "0px";
+		gv.GvMain.div.style.bottom = "0px";
 		window.onresize = function(e1) {
 			gv.GvMain.canvas.width = window.innerWidth;
 			gv.GvMain.canvas.height = window.innerHeight;
@@ -224,9 +244,13 @@ gv.GvMain.main = function() {
 		var beforeTouchX = null;
 		var beforeTouchY = null;
 		var beforeTouchD = null;
+		var baseNow = 0;
+		var beforeTouchLength = 0;
 		var touchK = 12.425134878021496 / Math.log(2);
 		var touchIds = new haxe.ds.IntMap();
 		var touchFunc = function(e7) {
+			if(beforeTouchLength != e7.touches.length) beforeTouchX = null;
+			beforeTouchLength = e7.touches.length;
 			if(1 <= e7.touches.length) {
 				var _g1 = 0;
 				var _g2 = e7.touches.length;
@@ -259,14 +283,40 @@ gv.GvMain.main = function() {
 				}
 				var d = sumD / e7.touches.length;
 				if(beforeTouchX != null) {
-					var wheel1 = Math.log(d / beforeTouchD) * touchK;
+					if(3 <= e7.touches.length) {
+						gv.GvMain.autoMode = false;
+						var fPos = 70.0 * (x - beforeTouchX) / gv.GvMain.canvas.width;
+						var newNow;
+						newNow = baseNow + (0 <= fPos?Math.floor(fPos):Math.ceil(fPos));
+						if(newNow != gv.GvMain.now && gv.GvMain.timeList != null && 0 <= newNow && newNow < gv.GvMain.timeList.length) {
+							gv.GvMain.now = newNow;
+							gv.GvMain.updateTime();
+						}
+					} else if(2 == e7.touches.length) {
+						var wheel1 = Math.log(d / beforeTouchD) * touchK;
+						gv.GvMain.myMouseX = x;
+						gv.GvMain.myMouseY = y;
+						gv.GvMain.updateSelf(null,false,wheel1,false,false);
+						beforeTouchX = x;
+						beforeTouchY = y;
+						beforeTouchD = d;
+					} else if(1 == e7.touches.length) {
+						gv.GvMain.myMouseX = x;
+						gv.GvMain.myMouseY = y;
+						gv.GvMain.updateSelf(null,true,0,false,false);
+						beforeTouchX = x;
+						beforeTouchY = y;
+						beforeTouchD = d;
+					}
+				} else {
 					gv.GvMain.myMouseX = x;
 					gv.GvMain.myMouseY = y;
-					gv.GvMain.updateSelf(null,true,wheel1,false,false);
+					gv.GvMain.updateSelf(null,false,0,false,false);
+					beforeTouchX = x;
+					beforeTouchY = y;
+					beforeTouchD = d;
+					baseNow = gv.GvMain.now;
 				}
-				beforeTouchX = x;
-				beforeTouchY = y;
-				beforeTouchD = d;
 			}
 			touchIds = new haxe.ds.IntMap();
 			var _g13 = 0;
@@ -380,7 +430,7 @@ gv.GvMain.updateSelf = function(ctx,mouseDown,zoom,zoom2,shiftClick) {
 	var time = gv.GvMain.nowSnap.getTime();
 	if(shiftClick) gv.GvCore.sendInput(time,gv.GvMain.cursorX,gv.GvMain.cursorY);
 	var title;
-	if(0 <= gv.GvMain.myMouseX && 0 <= gv.GvMain.myMouseY && gv.GvCore.getMinX() <= gv.GvMain.cursorX && gv.GvMain.cursorX <= gv.GvCore.getMaxX() && gv.GvCore.getMinY() <= gv.GvMain.cursorY && gv.GvMain.cursorY <= gv.GvCore.getMaxY()) title = "time " + time + " ( " + (gv.GvMain.now + 1) + " / " + gv.GvMain.timeList.length + " ) (" + (gv.GvMain.cursorX + 0.5 | 0) + ", " + (gv.GvMain.cursorY + 0.5 | 0) + ") (" + gv.GvMain.cursorX + ", " + gv.GvMain.cursorY + ")"; else title = "time " + time + " ( " + (gv.GvMain.now + 1) + " / " + gv.GvMain.timeList.length + " )";
+	if(0 <= gv.GvMain.myMouseX && 0 <= gv.GvMain.myMouseY && gv.GvCore.getMinX() <= gv.GvMain.cursorX && gv.GvMain.cursorX <= gv.GvCore.getMaxX() && gv.GvCore.getMinY() <= gv.GvMain.cursorY && gv.GvMain.cursorY <= gv.GvCore.getMaxY()) gv.GvMain.div.textContent = "time " + time + " ( " + (gv.GvMain.now + 1) + " / " + gv.GvMain.timeList.length + " ) (" + (gv.GvMain.cursorX + 0.5 | 0) + ", " + (gv.GvMain.cursorY + 0.5 | 0) + ") (" + gv.GvMain.cursorX + ", " + gv.GvMain.cursorY + ")"; else gv.GvMain.div.textContent = "time " + time + " ( " + (gv.GvMain.now + 1) + " / " + gv.GvMain.timeList.length + " )";
 	sx = (width / scale - dx) * 0.5 - gv.GvCore.getMinX() - maxD * gv.GvMain.cx;
 	sy = (height / scale - dy) * 0.5 - gv.GvCore.getMinY() - maxD * gv.GvMain.cy;
 	if(ctx != null) {
@@ -501,6 +551,57 @@ gv.GvSnapItem_Circle.prototype = {
 		ctx.beginPath();
 		ctx.arc(this.x,this.y,this.r,0,2 * Math.PI,false);
 		ctx.fill();
+	}
+	,output: function() {
+	}
+};
+gv.GvSnapItem_Text = function(text_,x_,y_,r_) {
+	this.x = x_;
+	this.y = y_;
+	this.r = r_;
+	this.text = text_;
+	this.colorR = 0;
+	this.colorG = 0;
+	this.colorB = 0;
+};
+gv.GvSnapItem_Text.__interfaces__ = [gv.GvSnapItem];
+gv.GvSnapItem_Text.prototype = {
+	rgb: function(r,g,b) {
+		this.colorR = r / 255.0;
+		this.colorG = g / 255.0;
+		this.colorB = b / 255.0;
+		return this;
+	}
+	,color: function(cIdx) {
+		var rgb = gv.GvCore.gvGetColorFromIndex(cIdx);
+		this.colorR = rgb[0];
+		this.colorG = rgb[1];
+		this.colorB = rgb[2];
+		return this;
+	}
+	,getMinX: function() {
+		return this.x - this.r;
+	}
+	,getMinY: function() {
+		return this.y - this.r;
+	}
+	,getMaxX: function() {
+		return this.x + this.r;
+	}
+	,getMaxY: function() {
+		return this.y + this.r;
+	}
+	,paint: function(ctx) {
+		var rate = 0.02 * this.r;
+		ctx.save();
+		ctx.translate(this.x,this.y);
+		ctx.font = "100px hoge";
+		ctx.scale(rate,rate);
+		ctx.setFillColor(this.colorR,this.colorG,this.colorB,1.0);
+		ctx.textAlign = "center";
+		ctx.textBaseline = "middle";
+		ctx.fillText(this.text,0,0);
+		ctx.restore();
 	}
 	,output: function() {
 	}
