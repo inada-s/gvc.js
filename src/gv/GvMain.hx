@@ -157,7 +157,7 @@ class GvMain {
                     if(beforeTouchX!=null) {
                         if(3<=e.touches.length) {
                             autoMode = false;
-                            var fPos = 70.0 * (x-beforeTouchX) / canvas.width;
+                            var fPos = 10.0 * (x-beforeTouchX) / canvas.width;
                             var newNow = baseNow + (0<=fPos ? Math.floor(fPos) : Math.ceil(fPos));
                             if(newNow!=now && timeList!=null && 0<=newNow && newNow<timeList.length) {
                                 now = newNow;

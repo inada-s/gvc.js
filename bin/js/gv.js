@@ -35,18 +35,22 @@ Main.main = function() {
 	gv.Gv.text("B",3.0,1.0).color(1);
 	gv.Gv.text("C",4.0,1.0).color(2);
 	gv.Gv.circle(1.0,2.0).rgb(255,0,0);
+	gv.Gv.arrow(1,1,2,1);
 	gv.Gv.newTime();
 	gv.Gv.circle(2.0,1.0).color(0);
 	gv.Gv.circle(3.0,1.0).color(1);
 	gv.Gv.circle(4.0,1.0).color(2);
 	gv.Gv.text("A",1.0,2.0).rgb(255,0,0);
+	gv.Gv.arrow(2,1,3,1);
 	gv.Gv.newTime();
 	gv.Gv.text("B",3.0,1.0).color(1);
 	gv.Gv.text("C",4.0,1.0).color(2);
 	gv.Gv.circle(1.0,2.0).rgb(255,0,0);
+	gv.Gv.arrow(3,1,4,1);
 	gv.Gv.newTime();
 	gv.Gv.circle(4.0,1.0).color(2);
 	gv.Gv.text("A",1.0,2.0).rgb(255,0,0);
+	gv.Gv.arrow(4,1,1,2);
 	gv.Gv.newTime();
 	gv.Gv.circle(1.0,2.0).rgb(255,0,0);
 };
@@ -71,6 +75,47 @@ gv.Gv.text = function(text,x,y,r) {
 	if(r == null) r = 0.5;
 	var ret = new gv.GvSnapItem_Text(text,x,y,r);
 	if(gv.Gv.enable_) gv.GvCore.addItem(ret);
+	return ret;
+};
+gv.Gv.arrow = function(fromX,fromY,toX,toY,r) {
+	if(r == null) r = 0.5;
+	var ret = new gv.GvSnapItem_Polygon();
+	if(gv.Gv.enable_) {
+		var odx = toX - fromX;
+		var ody = toY - fromY;
+		var rate = r / Math.sqrt(odx * odx + ody * ody);
+		var dx = odx * rate;
+		var dy = ody * rate;
+		var x2_base = toX + dx * 0.1;
+		var y2_base = toY + dy * 0.1;
+		var dx0 = dx * 0.1 * Math.tan(Math.PI * 15 / 180);
+		var dy0 = dy * 0.1 * Math.tan(Math.PI * 15 / 180);
+		var x2_3 = x2_base - dx * (0.1 / Math.sin(Math.PI * 15 / 180));
+		var y2_3 = y2_base - dy * (0.1 / Math.sin(Math.PI * 15 / 180));
+		var x2_4 = x2_3 - dx * (0.05 / Math.tan(Math.PI * 15 / 180));
+		var y2_4 = y2_3 - dy * (0.05 / Math.tan(Math.PI * 15 / 180));
+		var x2_5 = x2_base - dx * Math.cos(Math.PI * 15 / 180);
+		var y2_5 = y2_base - dy * Math.cos(Math.PI * 15 / 180);
+		var x2_6 = x2_5 - dx * (0.1 * Math.sin(Math.PI * 15 / 180));
+		var y2_6 = y2_5 - dy * (0.1 * Math.sin(Math.PI * 15 / 180));
+		var dx5 = dx * Math.sin(Math.PI * 15 / 180);
+		var dy5 = dy * Math.sin(Math.PI * 15 / 180);
+		var dx6 = dx5 - dx * (0.1 * Math.cos(Math.PI * 15 / 180));
+		var dy6 = dy5 - dy * (0.1 * Math.cos(Math.PI * 15 / 180));
+		ret.add(toX - dy0,toY + dx0);
+		ret.add(x2_5 - dy5,y2_5 + dx5);
+		ret.add(x2_6 - dy6,y2_6 + dx6);
+		ret.add(x2_4 - dy * 0.05,y2_4 + dx * 0.05);
+		ret.add(fromX + dx * (0.05 * Math.sqrt(2) / (1 + Math.sqrt(2))) - dy * 0.05,fromY + dy * (0.05 * Math.sqrt(2) / (1 + Math.sqrt(2))) + dx * 0.05);
+		ret.add(fromX - dy * (0.05 / (1 + Math.sqrt(2))),fromY + dx * (0.05 / (1 + Math.sqrt(2))));
+		ret.add(fromX + dy * (0.05 / (1 + Math.sqrt(2))),fromY - dx * (0.05 / (1 + Math.sqrt(2))));
+		ret.add(fromX + dx * (0.05 * Math.sqrt(2) / (1 + Math.sqrt(2))) + dy * 0.05,fromY + dy * (0.05 * Math.sqrt(2) / (1 + Math.sqrt(2))) - dx * 0.05);
+		ret.add(x2_4 + dy * 0.05,y2_4 - dx * 0.05);
+		ret.add(x2_6 + dy6,y2_6 - dx6);
+		ret.add(x2_5 + dy5,y2_5 - dx5);
+		ret.add(toX + dy0,toY - dx0);
+		gv.GvCore.addItem(ret);
+	}
 	return ret;
 };
 gv.GvCore = function() { };
@@ -285,7 +330,7 @@ gv.GvMain.main = function() {
 				if(beforeTouchX != null) {
 					if(3 <= e7.touches.length) {
 						gv.GvMain.autoMode = false;
-						var fPos = 70.0 * (x - beforeTouchX) / gv.GvMain.canvas.width;
+						var fPos = 10.0 * (x - beforeTouchX) / gv.GvMain.canvas.width;
 						var newNow;
 						newNow = baseNow + (0 <= fPos?Math.floor(fPos):Math.ceil(fPos));
 						if(newNow != gv.GvMain.now && gv.GvMain.timeList != null && 0 <= newNow && newNow < gv.GvMain.timeList.length) {
@@ -551,6 +596,81 @@ gv.GvSnapItem_Circle.prototype = {
 		ctx.beginPath();
 		ctx.arc(this.x,this.y,this.r,0,2 * Math.PI,false);
 		ctx.fill();
+	}
+	,output: function() {
+	}
+};
+gv.GvSnapItem_Polygon = function() {
+	this.yVec = new Array();
+	this.xVec = new Array();
+	this.colorR = 0;
+	this.colorG = 0;
+	this.colorB = 0;
+};
+gv.GvSnapItem_Polygon.__interfaces__ = [gv.GvSnapItem];
+gv.GvSnapItem_Polygon.prototype = {
+	add: function(x,y) {
+		this.xVec.push(x);
+		this.yVec.push(y);
+		return this;
+	}
+	,getMinX: function() {
+		var v = Math.POSITIVE_INFINITY;
+		var _g = 0;
+		var _g1 = this.xVec;
+		while(_g < _g1.length) {
+			var x = _g1[_g];
+			++_g;
+			v = Math.min(v,x);
+		}
+		return v;
+	}
+	,getMinY: function() {
+		var v = Math.POSITIVE_INFINITY;
+		var _g = 0;
+		var _g1 = this.yVec;
+		while(_g < _g1.length) {
+			var y = _g1[_g];
+			++_g;
+			v = Math.min(v,y);
+		}
+		return v;
+	}
+	,getMaxX: function() {
+		var v = Math.NEGATIVE_INFINITY;
+		var _g = 0;
+		var _g1 = this.xVec;
+		while(_g < _g1.length) {
+			var x = _g1[_g];
+			++_g;
+			v = Math.max(v,x);
+		}
+		return v;
+	}
+	,getMaxY: function() {
+		var v = Math.NEGATIVE_INFINITY;
+		var _g = 0;
+		var _g1 = this.yVec;
+		while(_g < _g1.length) {
+			var y = _g1[_g];
+			++_g;
+			v = Math.max(v,y);
+		}
+		return v;
+	}
+	,paint: function(ctx) {
+		var n = this.xVec.length;
+		if(0 < n) {
+			ctx.setFillColor(this.colorR,this.colorG,this.colorB,1.0);
+			ctx.beginPath();
+			ctx.moveTo(this.xVec[n - 1],this.yVec[n - 1]);
+			var _g = 0;
+			while(_g < n) {
+				var i = _g++;
+				ctx.lineTo(this.xVec[i],this.yVec[i]);
+			}
+			ctx.fill();
+		}
 	}
 	,output: function() {
 	}
