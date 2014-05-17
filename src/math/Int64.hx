@@ -11,6 +11,10 @@ abstract Int64(haxe.Int64) to haxe.Int64 {
         return haxe.Int64.toStr(this);
     }
 
+    public function toInt() {
+        return haxe.Int64.toInt(this);
+    }
+
     @:from public static function fromInt64(v:haxe.Int64) {
         return new Int64(v);
     }
