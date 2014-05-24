@@ -106,6 +106,66 @@ class GvCore {
         inputFloat_ = callback;
         inputInt_ = null;
     }
+    private static var dragStartInt_:Int->Int->Int->Void = null;
+    private static var dragStartFloat_:Int->Float->Float->Void = null;
+    private static var dragMoveInt_:Int->Int->Void = null;
+    private static var dragMoveFloat_:Float->Float->Void = null;
+    private static var dragEnd_:Void->Void = null;
+    private static var nowDragFlag:Bool = false;
+    public static function setDragModeInt(start:Int->Int->Int->Void, move:Int->Int->Void, end:Void->Void):Void {
+        dragStartInt_ = start;
+        dragStartFloat_ = null;
+        dragMoveInt_ = move;
+        dragMoveFloat_ = null;
+        dragEnd_ = end;
+    }
+    public static function setDragModeFloat(start:Int->Float->Float->Void, move:Float->Float->Void, end:Void->Void):Void {
+        dragStartInt_ = start;
+        dragStartFloat_ = null;
+        dragMoveInt_ = move;
+        dragMoveFloat_ = null;
+        dragEnd_ = end;
+    }
+    public static function isDragMode():Bool {
+        return dragStartInt_!=null || dragStartFloat_!=null;
+    }
+    public static function isNowDrag():Bool {
+        return nowDragFlag;
+    }
+    public static function sendDragStart(time:Int, x:Float, y:Float):Void {
+        sendDragEnd();
+        if(dragStartInt_!=null) {
+            var func:Int->Int->Int->Void = dragStartInt_;
+            nowDragFlag = true;
+            func(time, Math.round(x), Math.round(y));
+        }
+        else if(dragStartFloat_!=null) {
+            var func:Int->Float->Float->Void = dragStartFloat_;
+            nowDragFlag = true;
+            func(time, x, y);
+        }
+    }
+    public static function sendDragMove(time:Int, x:Float, y:Float):Void {
+        if(nowDragFlag) {
+            if(dragMoveInt_!=null) {
+                var func:Int->Int->Void = dragMoveInt_;
+                func(Math.round(x), Math.round(y));
+            }
+            else if(dragMoveFloat_!=null) {
+                var func:Float->Float->Void = dragMoveFloat_;
+                func(x, y);
+            }
+        }
+    }
+    public static function sendDragEnd():Void {
+        if(nowDragFlag) {
+            if(dragEnd_!=null) {
+                var func:Void->Void = dragEnd_;
+                func();
+            }
+            nowDragFlag = false;
+        }
+    }
     public static function autoMode():Void {
         ++autoModeCount;
     }

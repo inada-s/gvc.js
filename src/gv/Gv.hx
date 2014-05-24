@@ -32,6 +32,17 @@ class Gv {
         }
         return ret;
     }
+    public static function rect(x:Float, y:Float, w:Float, h:Float):GvSnapItem_Polygon {
+        var ret = new GvSnapItem_Polygon();
+        ret.add(x, y);
+        ret.add(x+w, y);
+        ret.add(x+w, y+h);
+        ret.add(x, y+h);
+        if(enable_) {
+            GvCore.addItem(ret);
+        }
+        return ret;
+    }
     public static function arrow(fromX:Float, fromY:Float, toX:Float, toY:Float, r:Float = 0.5):GvSnapItem_Polygon {
         var ret = new GvSnapItem_Polygon();
         var odx = toX-fromX;
@@ -131,6 +142,16 @@ class Gv {
     }
     public static function inputFloat(callback:Int->Float->Float->Void):Void {
         GvCore.inputFloat(callback);
+    }
+    public static function setDragModeInt(start:Int->Int->Int->Void, move:Int->Int->Void, end:Void->Void):Void {
+        GvCore.setDragModeInt(start, move, end);
+    }
+    public static function setDragModeFloat(start:Int->Float->Float->Void, move:Float->Float->Void, end:Void->Void):Void {
+        GvCore.setDragModeFloat(start, move, end);
+    }
+    public static function clearDragMode() {
+        GvCore.setDragModeInt(null, null, null);
+        GvCore.setDragModeFloat(null, null, null);
     }
     public static function autoMode():Void {
         GvCore.autoMode();

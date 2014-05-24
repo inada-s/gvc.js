@@ -1,5 +1,6 @@
 package gv;
 
+import gv.GvCore;
 import js.html.Element;
 import js.html.TouchEvent;
 import js.html.MouseEvent;
@@ -99,6 +100,12 @@ class GvMain {
                 myMouseX = e.x;
                 myMouseY = e.y;
                 updateSelf(null, false, 0, false, false);
+                if(GvCore.isDragMode()) {
+                    if(GvCore.isNowDrag()) {
+                        GvCore.sendDragEnd();
+                        updateTimeList();
+                    }
+                }
                 return false;
             };
             Browser.window.onmousemove = function(e:MouseEvent):Bool {
@@ -238,6 +245,14 @@ class GvMain {
             Browser.window.ontouchend = function(e:TouchEvent):Bool {
                 beforeTouchX = null;
                 e.preventDefault();
+                if(e.targetTouches.length==e.touches.length) {
+                    if(GvCore.isDragMode()) {
+                        if(GvCore.isNowDrag()) {
+                            GvCore.sendDragEnd();
+                            updateTimeList();
+                        }
+                    }
+                }
                 return false;
             }
             Main.main();
@@ -302,26 +317,39 @@ class GvMain {
         }
         cursorX = (myMouseX-width*0.5)/scale+dx*0.5+GvCore.getMinX()+maxD*cx;
         cursorY = (myMouseY-height*0.5)/scale+dy*0.5+GvCore.getMinY()+maxD*cy;
+        if(nowSnap==null) {
+            return;
+        }
+        var time = nowSnap.getTime();
         if(mouseDown) {
-            var dcx = cursorX - beforeCursorX;
-            var dcy = cursorY - beforeCursorY;
-            var oldCx = cx;
-            var oldCy = cy;
-            cx -= dcx/maxD;
-            cy -= dcy/maxD;
-            updateCenter();
-            if(oldCx!=cx || oldCy!=cy) {
-                if(zoom!=0) {
-                    cursorX = (myMouseX-width*0.5)/scale+dx*0.5+GvCore.getMinX()+maxD*cx;
-                    cursorY = (myMouseY-height*0.5)/scale+dy*0.5+GvCore.getMinY()+maxD*cy;
-                    var newScale = Math.min(Math.max(0.01, GvMain.scale * Math.pow(0.5, zoom*0.080482023721841)), 1.0);
-                    if(GvMain.scale!=newScale) {
-                        GvMain.scale = newScale;
-                        updateSelf(null, false, 0, true, false);
-                    }
+            if(GvCore.isDragMode()) {
+                if(!GvCore.isNowDrag()) {
+                    GvCore.sendDragStart(time, beforeCursorX, beforeCursorY);
                 }
-                updateUI();
-                return;
+                GvCore.sendDragMove(time, cursorX, cursorY);
+                updateTimeList();
+            }
+            else {
+                var dcx = cursorX - beforeCursorX;
+                var dcy = cursorY - beforeCursorY;
+                var oldCx = cx;
+                var oldCy = cy;
+                cx -= dcx/maxD;
+                cy -= dcy/maxD;
+                updateCenter();
+                if(oldCx!=cx || oldCy!=cy) {
+                    if(zoom!=0) {
+                        cursorX = (myMouseX-width*0.5)/scale+dx*0.5+GvCore.getMinX()+maxD*cx;
+                        cursorY = (myMouseY-height*0.5)/scale+dy*0.5+GvCore.getMinY()+maxD*cy;
+                        var newScale = Math.min(Math.max(0.01, GvMain.scale * Math.pow(0.5, zoom*0.080482023721841)), 1.0);
+                        if(GvMain.scale!=newScale) {
+                            GvMain.scale = newScale;
+                            updateSelf(null, false, 0, true, false);
+                        }
+                    }
+                    updateUI();
+                    return;
+                }
             }
         }
         if(zoom!=0) {
@@ -333,10 +361,6 @@ class GvMain {
                 return;
             }
         }
-        if(nowSnap==null) {
-            return;
-        }
-        var time = nowSnap.getTime();
         if(shiftClick) {
             GvCore.sendInput(time, cursorX, cursorY);
             updateTimeList();
