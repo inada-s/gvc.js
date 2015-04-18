@@ -42,7 +42,7 @@ class GvMain {
             canvas.width = Browser.window.innerWidth;
             canvas.height = Browser.window.innerHeight;
             ctx = canvas.getContext2d();
-            div = Browser.document.createElement("div");
+            div = Browser.document.createElement("pre");
             Browser.document.body.appendChild(div);
             div.style.position = "absolute";
             div.style.left = "0px";
@@ -365,12 +365,12 @@ class GvMain {
             GvCore.sendInput(time, cursorX, cursorY);
             updateTimeList();
         }
-        var title:String;
+        var out:String = GvCore.getOut(time);
         if(0<=myMouseX && 0<=myMouseY && GvCore.getMinX()<=cursorX && cursorX<=GvCore.getMaxX() && GvCore.getMinY()<=cursorY && cursorY<=GvCore.getMaxY()) {
-            div.textContent = 'time ${time} ( ${now+1} / ${timeList.length} ) (${Std.int(cursorX+0.5)}, ${Std.int(cursorY+0.5)}) (${cursorX}, ${cursorY})';
+            div.textContent = '${out}time ${time} ( ${now+1} / ${timeList.length} ) (${Std.int(cursorX+0.5)}, ${Std.int(cursorY+0.5)}) (${cursorX}, ${cursorY})';
         }
         else {
-            div.textContent = 'time ${time} ( ${now+1} / ${timeList.length} )';
+            div.textContent = '${out}time ${time} ( ${now+1} / ${timeList.length} )';
         }
         sx = (width/scale-dx)*0.5-GvCore.getMinX()-maxD*cx;
         sy = (height/scale-dy)*0.5-GvCore.getMinY()-maxD*cy;

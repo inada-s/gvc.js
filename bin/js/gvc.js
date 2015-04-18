@@ -125,6 +125,28 @@ gv.Gv.polygon = $hx_exports.p = function() {
 	gv.GvCore.addItem(ret);
 	return ret;
 };
+gv.Gv.line = $hx_exports.l = function(fromX,fromY,toX,toY,r) {
+	if(r == null) r = 0.5;
+	var ret = new gv.GvSnapItem_Polygon();
+	var odx = toX - fromX;
+	var ody = toY - fromY;
+	var rate = r / Math.sqrt(odx * odx + ody * ody);
+	var dx = odx * rate;
+	var dy = ody * rate;
+	ret.add(toX + dy * (0.05 / (1 + Math.sqrt(2))),toY + dx * (0.05 / (1 + Math.sqrt(2))));
+	ret.add(toX - dx * (0.05 * Math.sqrt(2) / (1 + Math.sqrt(2))) - dy * 0.05,toY - dy * (0.05 * Math.sqrt(2) / (1 + Math.sqrt(2))) + dx * 0.05);
+	ret.add(fromX + dx * (0.05 * Math.sqrt(2) / (1 + Math.sqrt(2))) - dy * 0.05,fromY + dy * (0.05 * Math.sqrt(2) / (1 + Math.sqrt(2))) + dx * 0.05);
+	ret.add(fromX - dy * (0.05 / (1 + Math.sqrt(2))),fromY + dx * (0.05 / (1 + Math.sqrt(2))));
+	ret.add(fromX + dy * (0.05 / (1 + Math.sqrt(2))),fromY - dx * (0.05 / (1 + Math.sqrt(2))));
+	ret.add(fromX + dx * (0.05 * Math.sqrt(2) / (1 + Math.sqrt(2))) + dy * 0.05,fromY + dy * (0.05 * Math.sqrt(2) / (1 + Math.sqrt(2))) - dx * 0.05);
+	ret.add(toX - dx * (0.05 * Math.sqrt(2) / (1 + Math.sqrt(2))) + dy * 0.05,toY - dy * (0.05 * Math.sqrt(2) / (1 + Math.sqrt(2))) - dx * 0.05);
+	ret.add(toX + dy * (0.05 / (1 + Math.sqrt(2))),toY - dx * (0.05 / (1 + Math.sqrt(2))));
+	gv.GvCore.addItem(ret);
+	return ret;
+};
+gv.Gv.out = $hx_exports.o = function(line) {
+	gv.GvCore.addOut(line);
+};
 gv.Gv.autoMode = $hx_exports.a = function() {
 	gv.GvCore.autoMode();
 };
@@ -160,6 +182,12 @@ gv.GvCore.addItem = function(item) {
 		snap1.addItem(item);
 	}
 };
+gv.GvCore.addOut = function(line) {
+	if(gv.GvCore.outMap.exists(gv.GvCore.nowTime)) {
+		var before = gv.GvCore.outMap.get(gv.GvCore.nowTime);
+		gv.GvCore.outMap.set(gv.GvCore.nowTime,"" + before + line + "\n");
+	} else gv.GvCore.outMap.set(gv.GvCore.nowTime,"" + line + "\n");
+};
 gv.GvCore.getMinX = function() {
 	return gv.GvCore.minX;
 };
@@ -183,6 +211,9 @@ gv.GvCore.getTimeList = function() {
 };
 gv.GvCore.getSnap = function(time) {
 	return gv.GvCore.snapMap.get(time);
+};
+gv.GvCore.getOut = function(time) {
+	if(gv.GvCore.outMap.exists(time)) return gv.GvCore.outMap.get(time); else return "";
 };
 gv.GvCore.getAutoModeCount = function() {
 	return gv.GvCore.autoModeCount;
@@ -281,7 +312,7 @@ gv.GvMain.main = function() {
 		gv.GvMain.canvas.width = window.innerWidth;
 		gv.GvMain.canvas.height = window.innerHeight;
 		gv.GvMain.ctx = gv.GvMain.canvas.getContext("2d");
-		gv.GvMain.div = window.document.createElement("div");
+		gv.GvMain.div = window.document.createElement("pre");
 		window.document.body.appendChild(gv.GvMain.div);
 		gv.GvMain.div.style.position = "absolute";
 		gv.GvMain.div.style.left = "0px";
@@ -607,8 +638,8 @@ gv.GvMain.updateSelf = function(ctx,mouseDown,zoom,zoom2,shiftClick) {
 		gv.GvCore.sendInput(time,gv.GvMain.cursorX,gv.GvMain.cursorY);
 		gv.GvMain.updateTimeList();
 	}
-	var title;
-	if(0 <= gv.GvMain.myMouseX && 0 <= gv.GvMain.myMouseY && gv.GvCore.getMinX() <= gv.GvMain.cursorX && gv.GvMain.cursorX <= gv.GvCore.getMaxX() && gv.GvCore.getMinY() <= gv.GvMain.cursorY && gv.GvMain.cursorY <= gv.GvCore.getMaxY()) gv.GvMain.div.textContent = "time " + time + " ( " + (gv.GvMain.now + 1) + " / " + gv.GvMain.timeList.length + " ) (" + (gv.GvMain.cursorX + 0.5 | 0) + ", " + (gv.GvMain.cursorY + 0.5 | 0) + ") (" + gv.GvMain.cursorX + ", " + gv.GvMain.cursorY + ")"; else gv.GvMain.div.textContent = "time " + time + " ( " + (gv.GvMain.now + 1) + " / " + gv.GvMain.timeList.length + " )";
+	var out = gv.GvCore.getOut(time);
+	if(0 <= gv.GvMain.myMouseX && 0 <= gv.GvMain.myMouseY && gv.GvCore.getMinX() <= gv.GvMain.cursorX && gv.GvMain.cursorX <= gv.GvCore.getMaxX() && gv.GvCore.getMinY() <= gv.GvMain.cursorY && gv.GvMain.cursorY <= gv.GvCore.getMaxY()) gv.GvMain.div.textContent = "" + out + "time " + time + " ( " + (gv.GvMain.now + 1) + " / " + gv.GvMain.timeList.length + " ) (" + (gv.GvMain.cursorX + 0.5 | 0) + ", " + (gv.GvMain.cursorY + 0.5 | 0) + ") (" + gv.GvMain.cursorX + ", " + gv.GvMain.cursorY + ")"; else gv.GvMain.div.textContent = "" + out + "time " + time + " ( " + (gv.GvMain.now + 1) + " / " + gv.GvMain.timeList.length + " )";
 	sx = (width / scale - dx) * 0.5 - gv.GvCore.getMinX() - maxD * gv.GvMain.cx;
 	sy = (height / scale - dy) * 0.5 - gv.GvCore.getMinY() - maxD * gv.GvMain.cy;
 	if(ctx != null) {
@@ -830,7 +861,7 @@ gv.GvSnapItem_Polygon.prototype = {
 	,paint: function(ctx) {
 		var n = this.xVec.length;
 		if(0 < n) {
-			ctx.setFillColor(this.colorR,this.colorG,this.colorB,1.0);
+			ctx.fillStyle = gv.GvCore.rgb(this.colorR,this.colorG,this.colorB);
 			ctx.beginPath();
 			ctx.moveTo(this.xVec[n - 1],this.yVec[n - 1]);
 			var _g = 0;
@@ -888,7 +919,7 @@ gv.GvSnapItem_Text.prototype = {
 		ctx.translate(this.x,this.y);
 		ctx.font = "100px hoge";
 		ctx.scale(rate,rate);
-		ctx.setFillColor(this.colorR,this.colorG,this.colorB,1.0);
+		ctx.fillStyle = gv.GvCore.rgb(this.colorR,this.colorG,this.colorB);
 		ctx.textAlign = "center";
 		ctx.textBaseline = "middle";
 		ctx.fillText(this.text,0,0);
@@ -1072,6 +1103,7 @@ gv.GvCore.maxX = 1;
 gv.GvCore.maxY = 1;
 gv.GvCore.emptyFlag = true;
 gv.GvCore.snapMap = new haxe.ds.IntMap();
+gv.GvCore.outMap = new haxe.ds.IntMap();
 gv.GvCore.autoModeCount = 0;
 gv.GvCore.colors = [[1,0,0],[0,1,0],[0,0,1],[1,1,0],[0,1,1],[1,0,1],[1,0.5,0],[1,0,0.5]];
 gv.GvCore.nowDragFlag = false;

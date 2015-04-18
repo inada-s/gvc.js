@@ -62,7 +62,7 @@ class GvSnapItem_Polygon implements GvSnapItem {
     public function paint(ctx:CanvasRenderingContext2D):Void {
         var n = xVec.length;
         if(0<n) {
-            ctx.setFillColor(colorR, colorG, colorB, 1.0);
+            ctx.fillStyle = GvCore.rgb(colorR, colorG, colorB);
             ctx.beginPath();
             ctx.moveTo(xVec[n-1], yVec[n-1]);
             for(i in 0...n) {

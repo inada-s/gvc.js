@@ -9,6 +9,7 @@ class GvCore {
     private static var maxY:Float = 1;
     private static var emptyFlag:Bool = true;
     private static var snapMap:Map<Int, GvSnap> = new Map<Int, GvSnap>();
+    private static var outMap:Map<Int, String> = new Map<Int, String>();
     private static var autoModeCount:Int = 0;
     public static function newTime(time:Null<Int> = null):Void {
         if(time==null) {
@@ -45,6 +46,15 @@ class GvCore {
             snap.addItem(item);
         }
     }
+    public static function addOut(line:String):Void {
+        if(outMap.exists(nowTime)) {
+            var before:String = outMap.get(nowTime);
+            outMap.set(nowTime, '${before}${line}\n');
+        }
+        else {
+            outMap.set(nowTime, '${line}\n');
+        }
+    }
     public static function getMinX():Float {
         return minX;
     }
@@ -66,6 +76,9 @@ class GvCore {
     }
     public static function getSnap(time:Int):GvSnap {
         return snapMap.get(time);
+    }
+    public static function getOut(time:Int):String {
+        return outMap.exists(time) ? outMap.get(time) : "";
     }
     public static function getAutoModeCount():Int {
         return autoModeCount;
