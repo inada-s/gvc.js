@@ -22,7 +22,7 @@ class Gv {
         var arg:Array<Float> = untyped __js__("arguments");
         var ret = new GvSnapItem_Polygon();
         for(i in 0...cast(arg.length/2, Int)) {
-            ret.add(arg[i]*2, arg[i]*2+1);
+            ret.add(arg[i*2], arg[i*2+1]);
         }
         GvCore.addItem(ret);
         return ret;

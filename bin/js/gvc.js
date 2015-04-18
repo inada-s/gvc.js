@@ -120,7 +120,7 @@ gv.Gv.polygon = $hx_exports.p = function() {
 	_g = js.Boot.__cast(arg.length / 2 , Int);
 	while(_g1 < _g) {
 		var i = _g1++;
-		ret.add(arg[i] * 2,arg[i] * 2 + 1);
+		ret.add(arg[i * 2],arg[i * 2 + 1]);
 	}
 	gv.GvCore.addItem(ret);
 	return ret;
