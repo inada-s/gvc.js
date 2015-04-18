@@ -19,16 +19,6 @@ class GvCore {
             nowTime = time;
         }
     }
-    public static function rollbackAll():Void {
-        nowTime = 0;
-        maxTime = 0;
-        minX = 0;
-        minY = 0;
-        maxX = 0;
-        maxY = 0;
-        emptyFlag = true;
-        snapMap = new Map<Int, GvSnap>();
-    }
     public static function addItem(item:GvSnapItem):Void {
         if(emptyFlag) {
             emptyFlag = false;
@@ -168,5 +158,8 @@ class GvCore {
     }
     public static function autoMode():Void {
         ++autoModeCount;
+    }
+    public static function rgb(r:Float, g:Float, b:Float):String {
+        return 'rgb(${r*100}%, ${g*100}%, ${b*100}%)';
     }
 }

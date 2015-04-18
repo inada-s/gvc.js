@@ -1,7 +1,7 @@
 -cp src
--js bin/js/gv0.js
+-js bin/js/gvc0.js
 -main gv.GvMain
--dce full
--cmd "cat copyright.txt > bin/js/gv.js"
--cmd "cat bin/js/gv0.js >> bin/js/gv.js"
--cmd "rm bin/js/gv0.js"
+-dce std
+-cmd "cat copyright.txt > bin/js/gvc.js"
+-cmd "cat bin/js/gvc0.js >> bin/js/gvc.js"
+-cmd "rm bin/js/gvc0.js"

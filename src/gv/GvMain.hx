@@ -9,7 +9,8 @@ import js.html.Event;
 import js.html.CanvasRenderingContext2D;
 import js.html.CanvasElement;
 import js.Browser;
-import Main;
+
+import gv.Gv;
 
 class GvMain {
     static var canvas:CanvasElement;
@@ -255,7 +256,6 @@ class GvMain {
                 }
                 return false;
             }
-            Main.main();
             updateTimeList();
         };
     }

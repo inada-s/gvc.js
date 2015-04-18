@@ -43,7 +43,7 @@ class GvSnapItem_Circle implements GvSnapItem {
         return y + r;
     }
     public function paint(ctx:CanvasRenderingContext2D):Void {
-        ctx.setFillColor(colorR, colorG, colorB, 1.0);
+        ctx.fillStyle = GvCore.rgb(colorR, colorG, colorB);
         ctx.beginPath();
         ctx.arc(x, y, r, 0, 2*Math.PI, false);
         ctx.fill();
