@@ -325,6 +325,34 @@ gv.GvMain.main = function() {
 		window.onkeydown = function(e2) {
 			var _g = e2.keyCode;
 			switch(_g) {
+			case 33:
+				gv.GvMain.autoMode = false;
+				if(1 <= gv.GvMain.now) {
+					gv.GvMain.now = Std["int"](Math.max(0,gv.GvMain.now - Math.max(10,Math.sqrt(gv.GvMain.timeList.length))));
+					gv.GvMain.updateTime();
+				}
+				break;
+			case 34:
+				gv.GvMain.autoMode = false;
+				if(gv.GvMain.timeList != null && gv.GvMain.now < gv.GvMain.timeList.length - 1) {
+					gv.GvMain.now = Std["int"](Math.min(gv.GvMain.now + Math.max(10,Math.sqrt(gv.GvMain.timeList.length)),gv.GvMain.timeList.length - 1));
+					gv.GvMain.updateTime();
+				}
+				break;
+			case 35:
+				gv.GvMain.autoMode = false;
+				if(gv.GvMain.timeList != null && gv.GvMain.now < gv.GvMain.timeList.length - 1) {
+					gv.GvMain.now = gv.GvMain.timeList.length - 1;
+					gv.GvMain.updateTime();
+				}
+				break;
+			case 36:
+				gv.GvMain.autoMode = false;
+				if(1 <= gv.GvMain.now) {
+					gv.GvMain.now = 0;
+					gv.GvMain.updateTime();
+				}
+				break;
 			case 37:
 				gv.GvMain.autoMode = false;
 				if(1 <= gv.GvMain.now) {

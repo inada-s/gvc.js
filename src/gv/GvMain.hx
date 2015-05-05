@@ -54,6 +54,30 @@ class GvMain {
             };
             Browser.window.onkeydown = function(e:KeyboardEvent):Void {
                 switch(e.keyCode) {
+                    case 33://PAGE UP
+                        autoMode = false;
+                        if(1<=now) {
+                            now = Std.int(Math.max(0, now - Math.max(10, Math.sqrt(timeList.length))));
+                            updateTime();
+                        }
+                    case 34://PAGE DOWN
+                        autoMode = false;
+                        if(timeList!=null && now<timeList.length-1) {
+                            now = Std.int(Math.min(now + Math.max(10, Math.sqrt(timeList.length)), timeList.length-1));
+                            updateTime();
+                        }
+                    case 35://END
+                        autoMode = false;
+                        if(timeList!=null && now<timeList.length-1) {
+                            now = timeList.length-1;
+                            updateTime();
+                        }
+                    case 36://HOME
+                        autoMode = false;
+                        if(1<=now) {
+                            now = 0;
+                            updateTime();
+                        }
                     case 37://LEFT
                         autoMode = false;
                         if(1<=now) {
