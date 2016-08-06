@@ -27,6 +27,7 @@
 #include <assert.h>
 #include <math.h>
 #include <stdarg.h>
+#include <functional>
 
 #ifdef _WIN32
 #include <io.h>
@@ -382,6 +383,28 @@ void gvRect(double x, double y, double w, double h) {
   gvRect(x, y, w, h, gvRGB(0, 0, 0));
 #endif
 }
+
+bool g_polygon;
+bool g_polygon_begin;
+void gvPolygon(GV_RGB rgb, std::function<void()> f) {
+  if (!g_gvEnableFlag) return;
+  assert(g_polygon == false);
+  g_polygon = g_polygon_begin = true;
+  gvInit();
+  f();
+  fprintf(g_gvFile, ").rgb(%d, %d, %d, %d);\n", rgb.r, rgb.g, rgb.b, rgb.a);
+  fflush(g_gvFile);
+  g_polygon = g_polygon_begin = false;
+}
+
+void gvPolygonAdd(double x, double y) {
+  if (g_polygon_begin)
+    fprintf(g_gvFile, "p(%g, %g", x, y);
+  else
+    fprintf(g_gvFile, ", %g, %g", x, y);
+  g_polygon_begin = false;
+}
+
 void gvLine(double x1, double y1, double x2, double y2, double r, GV_RGB rgb) {
   if (!g_gvEnableFlag) return;
   gvInit();
