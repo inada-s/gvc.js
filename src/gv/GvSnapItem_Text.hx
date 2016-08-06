@@ -53,7 +53,7 @@ class GvSnapItem_Text implements GvSnapItem {
         ctx.translate(x, y);
         ctx.font = "100px hoge";
         ctx.scale(rate, rate);
-        ctx.fillStyle = GvCore.rgb(colorR, colorG, colorB);
+        ctx.fillStyle = GvCore.rgb(colorR, colorG, colorB, colorA);
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(text, 0, 0);

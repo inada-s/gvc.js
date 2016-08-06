@@ -966,7 +966,7 @@ gv_GvSnapItem_$Text.prototype = {
 		ctx.translate(this.x,this.y);
 		ctx.font = "100px hoge";
 		ctx.scale(rate,rate);
-		ctx.fillStyle = gv_GvCore.rgb(this.colorR,this.colorG,this.colorB);
+		ctx.fillStyle = gv_GvCore.rgb(this.colorR,this.colorG,this.colorB,this.colorA);
 		ctx.textAlign = "center";
 		ctx.textBaseline = "middle";
 		ctx.fillText(this.text,0,0);
