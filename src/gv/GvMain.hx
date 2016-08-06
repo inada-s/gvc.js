@@ -115,15 +115,15 @@ class GvMain {
             var mouseDownFlag:Bool = false;
             Browser.window.onmousedown = function(e:MouseEvent):Bool {
                 mouseDownFlag = true;
-                myMouseX = e.x;
-                myMouseY = e.y;
+                myMouseX = e.clientX;
+                myMouseY = e.clientY;
                 updateSelf(null, false, 0, false, e.shiftKey);
                 return false;
             };
             Browser.window.onmouseup = function(e:MouseEvent):Bool {
                 mouseDownFlag = false;
-                myMouseX = e.x;
-                myMouseY = e.y;
+                myMouseX = e.clientX;
+                myMouseY = e.clientY;
                 updateSelf(null, false, 0, false, false);
                 if(GvCore.isDragMode()) {
                     if(GvCore.isNowDrag()) {
@@ -134,14 +134,14 @@ class GvMain {
                 return false;
             };
             Browser.window.onmousemove = function(e:MouseEvent):Bool {
-                myMouseX = e.x;
-                myMouseY = e.y;
+                myMouseX = e.clientX;
+                myMouseY = e.clientY;
                 updateSelf(null, mouseDownFlag, 0, false, false);
                 return false;
             };
-            Browser.window.onmousewheel = function(e:MouseEvent):Bool {
-                myMouseX = e.x;
-                myMouseY = e.y;
+            Browser.window.onwheel = function(e:MouseEvent):Bool {
+                myMouseX = e.clientX;
+                myMouseY = e.clientY;
                 var wheel:Int = (0<e.detail ? -1 : e.detail<0 ? 1 : 0);
                 if(wheel==0) {
                     var wheelDelta = untyped(e.wheelDelta);
