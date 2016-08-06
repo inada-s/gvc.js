@@ -10,6 +10,7 @@ class GvSnapItem_Text implements GvSnapItem {
     private var colorR:Float;
     private var colorG:Float;
     private var colorB:Float;
+    private var colorA:Float;
     public function new(text_:String, x_:Float, y_:Float, r_:Float) {
         x = x_;
         y = y_;
@@ -18,11 +19,13 @@ class GvSnapItem_Text implements GvSnapItem {
         colorR = 0;
         colorG = 0;
         colorB = 0;
+        colorA = 1.0;
     }
-    public function rgb(r:Int, g:Int, b:Int):GvSnapItem_Text {
+    public function rgb(r:Int, g:Int, b:Int, a:Int=255):GvSnapItem_Text {
         colorR = r / 255.0;
         colorG = g / 255.0;
         colorB = b / 255.0;
+        colorA = a / 255.0;
         return this;
     }
     public function color(cIdx:Int):GvSnapItem_Text {

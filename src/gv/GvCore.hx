@@ -172,7 +172,7 @@ class GvCore {
     public static function autoMode():Void {
         ++autoModeCount;
     }
-    public static function rgb(r:Float, g:Float, b:Float):String {
-        return 'rgb(${r*100}%, ${g*100}%, ${b*100}%)';
+    public static function rgb(r:Float, g:Float, b:Float, a:Float=1.0):String {
+        return 'rgba(${r*100}%, ${g*100}%, ${b*100}%, ${a}';
     }
 }

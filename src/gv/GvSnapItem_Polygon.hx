@@ -8,15 +8,18 @@ class GvSnapItem_Polygon implements GvSnapItem {
     private var colorR:Float;
     private var colorG:Float;
     private var colorB:Float;
+    private var colorA:Float;
     public function new() {
         colorR = 0;
         colorG = 0;
         colorB = 0;
+        colorA = 1.0;
     }
-    public function rgb(r:Int, g:Int, b:Int):GvSnapItem_Polygon {
+    public function rgb(r:Int, g:Int, b:Int, a:Int=255):GvSnapItem_Polygon {
         colorR = r / 255.0;
         colorG = g / 255.0;
         colorB = b / 255.0;
+        colorA = a / 255.0;
         return this;
     }
     public function color(cIdx:Int):GvSnapItem_Polygon {
@@ -62,7 +65,7 @@ class GvSnapItem_Polygon implements GvSnapItem {
     public function paint(ctx:CanvasRenderingContext2D):Void {
         var n = xVec.length;
         if(0<n) {
-            ctx.fillStyle = GvCore.rgb(colorR, colorG, colorB);
+            ctx.fillStyle = GvCore.rgb(colorR, colorG, colorB, colorA);
             ctx.beginPath();
             ctx.moveTo(xVec[n-1], yVec[n-1]);
             for(i in 0...n) {

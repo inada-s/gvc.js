@@ -9,6 +9,7 @@ class GvSnapItem_Circle implements GvSnapItem {
     private var colorR:Float;
     private var colorG:Float;
     private var colorB:Float;
+    private var colorA:Float;
     public function new(x_:Float, y_:Float, r_:Float) {
         x = x_;
         y = y_;
@@ -16,11 +17,13 @@ class GvSnapItem_Circle implements GvSnapItem {
         colorR = 0;
         colorG = 0;
         colorB = 0;
+        colorA = 1.0;
     }
-    public function rgb(r:Int, g:Int, b:Int):GvSnapItem_Circle {
+    public function rgb(r:Int, g:Int, b:Int, a:Int=255):GvSnapItem_Circle {
         colorR = r / 255.0;
         colorG = g / 255.0;
         colorB = b / 255.0;
+        colorA = a / 255.0;
         return this;
     }
     public function color(cIdx:Int):GvSnapItem_Circle {
@@ -43,7 +46,7 @@ class GvSnapItem_Circle implements GvSnapItem {
         return y + r;
     }
     public function paint(ctx:CanvasRenderingContext2D):Void {
-        ctx.fillStyle = GvCore.rgb(colorR, colorG, colorB);
+        ctx.fillStyle = GvCore.rgb(colorR, colorG, colorB, colorA);
         ctx.beginPath();
         ctx.arc(x, y, r, 0, 2*Math.PI, false);
         ctx.fill();
